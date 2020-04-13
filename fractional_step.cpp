@@ -179,17 +179,19 @@ int main()
 	    }
 	}
 
-    ff<< "# vtk DataFile Version 3.0" << endl;
-    ff<< "vtk output" << endl;
-    ff<< "ASCII" << endl;
-    ff<< "DATASET STRUCTURED_POINTS" << endl;
-    
-
-
-    for(int i=1; i<xn; i++){
-		for(int j=1; j<yn; j++){
-			//fk<<double((i-0.5)*dx)<<" "<<double((j-0.5)*dy)<<" "<<(u[i*(yn+1)+j]+u[(i+1)*(yn+1)+j])/2.0<<" "<<(v[i*(yn+2)+j]+v[i*(yn+2)+j+1])/2.0<<endl;
-        	ff<<double((i-0.5)*dx)<<" "<<double((j-0.5)*dy)<<" "<<p[i*(yn+1)+j]<<endl;
-		}
-	}
+    ff << "# vtk DataFile Version 3.0" << endl;
+    ff << "vtk output" << endl;
+    ff << "ASCII" << endl;
+    ff << "DATASET STRUCTURED_POINTS" << endl;
+    ff << "DIMENSIONS " << xn-1 << " " << yn-1 << " " << 1 << endl;
+    ff << "ORIGIN " << dx/2 << " " << dy/2 << " " << 0.0 << endl;
+    ff << "SPACING " << dx << " " << dy << " " << 1.0 << endl;
+    ff << "POINT_DATA " << (xn-1)*(yn-1) << endl;
+    ff <<"SCALARS " << "pressure " << "double" << endl;
+    ff <<"LOOKUP_TABLE default" << endl;
+    for(int i=0; i<xn-1; i++){
+        for(int j=0; j<yn-1; j++){
+            ff << p[j*(yn+1)+i+yn+2+1] << endl;
+        }
+    }
 }
