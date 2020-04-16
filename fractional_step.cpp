@@ -1,3 +1,6 @@
+
+
+
 #include<iostream>
 #include<vector>
 #include<cmath>
@@ -106,7 +109,7 @@ inline void vel(vector<double> &u, vector<double> &v, double dx, double dy, doub
 			vmid=(v[i*(yn+2)+j]+v[i*(yn+2)+j+1]+v[(i-1)*(yn+2)+j+1]+v[(i-1)*(yn+2)+j])/4.0;
 			uad=u[i*(yn+1)+j]*(u[(i+1)*(yn+1)+j]-u[(i-1)*(yn+1)+j])/2.0/dx+vmid*(u[i*(yn+1)+j+1]-u[i*(yn+1)+j-1])/2.0/dy;
 			udif=(u[(i+1)*(yn+1)+j]-2.0*u[i*(yn+1)+j]+u[(i-1)*(yn+1)+j])/dx/dx+(u[i*(yn+1)+j+1]-2.0*u[i*(yn+1)+j]+u[i*(yn+1)+j-1])/dy/dy;
-			u[i*(yn+1)+j]=u[i*(yn+1)+j]+dt*(-uad+1.0/Re*udif);
+			u[i*(yn+1)+j]=u[i*(yn+1)+j]+dt*(-uad+(1.0/Re)*udif);
 		}
 	}
 
@@ -116,7 +119,7 @@ inline void vel(vector<double> &u, vector<double> &v, double dx, double dy, doub
 			umid=(u[i*(yn+1)+j]+u[(i+1)*(yn+1)+j]+u[(i+1)*(yn+1)+j-1]+u[i*(yn+1)+j-1])/4.0;
 			vad=umid*(v[(i+1)*(yn+2)+j]-v[(i-1)*(yn+2)+j])/2.0/dx+v[i*(yn+2)+j]*(v[i*(yn+2)+j+1]-v[i*(yn+2)+j-1])/2.0/dy;
 			vdif=(v[(i+1)*(yn+2)+j]-2.0*v[i*(yn+2)+j]+v[(i-1)*(yn+2)+j])/dx/dx+(v[i*(yn+2)+j+1]-2.0*v[i*(yn+2)+j]+v[i*(yn+2)+j-1])/dy/dy;
-			v[i*(yn+2)+j]=v[i*(yn+2)+j]+dt*(-vad+1.0/Re*vdif);
+			v[i*(yn+2)+j]=v[i*(yn+2)+j]+dt*(-vad+(1.0/Re)*vdif);
 		}
 	}
 }
@@ -153,12 +156,10 @@ int main()
     }
     //time step
     for(int l=0; l<=lm; l++){
-        for(l=1;l<=lm;l++){	
             vel(u, v, dx, dy, dt, uwall);
             poi(km, dx, dy, dt, err, u, v, p);
             update(dx, dy, dt, u, v, p, divv, uwall);
             if(l%1000==0) cout<<l<<" "<<err<<" "<<divv<<endl;
-        }
     }
     //output
     fk << "# vtk DataFile Version 3.0" << endl;

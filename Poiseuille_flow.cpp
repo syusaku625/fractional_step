@@ -2,9 +2,9 @@
 #include<cmath>
 #include<fstream>
 #include<vector>
-#define xn 31
-#define yn 31
-#define Re 40
+#define xn 44
+#define yn 22
+#define Re 100
 using namespace std;
 
 inline void update(vector<vector<double>> &u, vector<vector<double>> &v, vector<vector<double>> &p, double dt, double dx, double dy, double &diff)
@@ -38,12 +38,15 @@ inline void poisson(vector<vector<double>> &u, vector<vector<double>> &v, vector
         //boundary condition Neumman
         for(int i=0; i<xn+1; i++){
             p[0][i]=p[1][i];
-            p[xn][i]=p[xn-1][i];
+            p[yn][i]=p[yn-1][i];
+        }
+        for(int i=0; i<yn+1; i++){
             p[i][0]=0.0;
             p[i][xn]=1.0;
         }
+        
         for(int i=1; i<xn; i++){
-            for(int j=1; j<xn; j++){
+            for(int j=1; j<yn; j++){
                 double origin=p[j][i];
                 p[j][i]=C1*(p[j][i+1]+p[j][i-1])+C2*(p[j+1][i]+p[j-1][i])-C3*((u[j][i+1]-u[j][i])/dx+(v[j+1][i]-v[j][i])/dy);
                 err+=(p[j][i]-origin)*(p[j][i]-origin);
@@ -57,27 +60,27 @@ inline void poisson(vector<vector<double>> &u, vector<vector<double>> &v, vector
 
 inline void velocity(vector<vector<double>> &u, vector<vector<double>> &v, double uwall, double dx, double dy, double dt)
 {
-    //Boundary consition for bottom wall
-    for(int i=0; i<xn+2; i++){
+    //Boundary condition for bottom wall
+    for(int i=1; i<xn+1; i++){
         v[1][i]=0.0;
         v[0][i]=v[2][i];
     }
-    for(int i=0; i<xn+2; i++){
+    for(int i=0; i<xn+1; i++){
         u[0][i]=-u[1][i];
     }
     //Boundary condition for upper wall
-    for(int i=0; i<xn+2; i++){
+    for(int i=1; i<xn+1; i++){
         v[yn][i]=0.0;
         v[yn+1][i]=v[yn-1][i];
     }
-    for(int i=0; i<xn+2; i++){
+    for(int i=0; i<xn+1; i++){
         u[yn][i]=-u[yn-1][i];
     }
     //solve u
     for(int i=2; i<xn; i++){
         for(int j=1; j<yn; j++){
             double vmid=(v[j][i]+v[j+1][i]+v[j+1][i-1]+v[j][i-1])/4.0;
-            double uad=u[j][i]*((u[j][i+1]-u[j][i-1])/(2.0*dx))+vmid*((u[j+1][i]-u[j-1][i])/(2.0*dx));
+            double uad=u[j][i]*((u[j][i+1]-u[j][i-1])/(2.0*dx))+vmid*((u[j+1][i]-u[j-1][i])/(2.0*dy));
             double udif=(u[j][i+1]-2.0*u[j][i]+u[j][i-1])/(dx*dx)+(u[j+1][i]-2.0*u[j][i]+u[j-1][i])/(dy*dy);
             u[j][i]=u[j][i]+dt*(-uad+(1.0/Re)*udif);
         }
@@ -95,11 +98,11 @@ inline void velocity(vector<vector<double>> &u, vector<vector<double>> &v, doubl
 
 int main()
 {
-    vector<vector<double>> p(xn+1, vector<double>(xn+1));
-    vector<vector<double>> u(xn+2, vector<double>(xn+2));
-    vector<vector<double>> v(xn+2, vector<double>(xn+2));
-    double lx=1.0;
-    double ly=1.0;
+    vector<vector<double>> p(yn+1, vector<double>(xn+1));
+    vector<vector<double>> u(yn+1, vector<double>(xn+2));
+    vector<vector<double>> v(yn+2, vector<double>(xn+1));
+    double lx=4.0;
+    double ly=2.0;
     double uwall=1.0;
     double dx=lx/(xn-1);
     double dy=ly/(yn-1);
@@ -145,8 +148,8 @@ int main()
     ff << "POINT_DATA " << (xn-1)*(yn-1) << endl;
     ff <<"SCALARS " << "pressure " << "double" << endl;
     ff <<"LOOKUP_TABLE default" << endl;
-    for(int i=1; i<xn; i++){
-        for(int j=1; j<yn; j++){
+    for(int i=1; i<yn; i++){
+        for(int j=1; j<xn; j++){
             ff << p[i][j] << endl;
         }
     }
