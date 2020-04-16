@@ -1,5 +1,5 @@
-pressure.vtk
-velocity.vtk
-pre.txt
-vel.txt
+*.vtk
+*.txt
+*/xlsx
+*.png
 ./a.out

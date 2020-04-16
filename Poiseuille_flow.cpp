@@ -2,7 +2,7 @@
 #include<cmath>
 #include<fstream>
 #include<vector>
-#define xn 44
+#define xn 88
 #define yn 22
 #define Re 100
 using namespace std;
@@ -41,8 +41,8 @@ inline void poisson(vector<vector<double>> &u, vector<vector<double>> &v, vector
             p[yn][i]=p[yn-1][i];
         }
         for(int i=0; i<yn+1; i++){
-            p[i][0]=0.0;
-            p[i][xn]=1.0;
+            p[i][0]=100.0;
+            p[i][xn]=0.0;
         }
         
         for(int i=1; i<xn; i++){
@@ -60,20 +60,28 @@ inline void poisson(vector<vector<double>> &u, vector<vector<double>> &v, vector
 
 inline void velocity(vector<vector<double>> &u, vector<vector<double>> &v, double uwall, double dx, double dy, double dt)
 {
+    //Boundary condition for right wall
+    for(int i=0; i<yn+1; i++){
+        u[i][xn+1]=u[i][xn];
+    }
+    //Boundary condition for left wall
+    for(int i=0; i<yn+1; i++){
+        u[i][0]=u[i][1];
+    }
     //Boundary condition for bottom wall
-    for(int i=1; i<xn+1; i++){
+    for(int i=0; i<xn+1; i++){
         v[1][i]=0.0;
         v[0][i]=v[2][i];
     }
-    for(int i=0; i<xn+1; i++){
+    for(int i=0; i<xn+2; i++){
         u[0][i]=-u[1][i];
     }
     //Boundary condition for upper wall
-    for(int i=1; i<xn+1; i++){
+    for(int i=0; i<xn+1; i++){
         v[yn][i]=0.0;
         v[yn+1][i]=v[yn-1][i];
     }
-    for(int i=0; i<xn+1; i++){
+    for(int i=0; i<xn+2; i++){
         u[yn][i]=-u[yn-1][i];
     }
     //solve u
@@ -102,16 +110,16 @@ int main()
     vector<vector<double>> u(yn+1, vector<double>(xn+2));
     vector<vector<double>> v(yn+2, vector<double>(xn+1));
     double lx=4.0;
-    double ly=2.0;
+    double ly=1.0;
     double uwall=1.0;
     double dx=lx/(xn-1);
     double dy=ly/(yn-1);
-    int lm=20000;
+    int lm=40000;
     double diff;
     double dt=0.001;
     double err;
-    int km=300;
-    ofstream fk,ff;
+    int km=600;
+    ofstream fk,ff,fc,fu;
 	fk.open("velocity.vtk");
 	ff.open("pressure.vtk");
     for(int l=0; l<=lm; l++){
@@ -120,21 +128,33 @@ int main()
         update(u, v, p, dt, dx, dy, diff);
         if(l%1000==0) cout<<l<<" "<<err<<" "<<diff<<endl;
     }
+    int point_count=0;
+    for(int i=0; i<xn; i++){
+        for(int j=0; j<yn; j++){
+            if(!(u[j][i]==0 && v[j][i]==0)){
+                point_count++;
+            }
+        }
+    }
     fk << "# vtk DataFile Version 3.0" << endl;
     fk << "vtk output" << endl;
     fk << "ASCII" << endl;
     fk << "DATASET UNSTRUCTURED_GRID" << endl;
-    fk << "POINTS " << xn*yn << " double" << endl;
+    fk << "POINTS " << point_count << " double" << endl;
     for(int i=0; i<xn; i++){
 	    for(int j=0; j<yn; j++){
-            fk<< i*dx << " " << j*dy << " " << 0 << endl;
+            if(!(u[j][i]==0 && v[j][i]==0)){
+                fk<< i*dx << " " << j*dy << " " << 0 << endl;
+            }
 	    }
 	}
-    fk << "POINT_DATA " << xn*yn << endl;
+    fk << "POINT_DATA " << point_count << endl;
     fk << "VECTORS velocity[m/s] double" << endl; 
 	for(int i=0; i<xn; i++){
 	    for(int j=0; j<yn; j++){
-	        fk << u[j][i] << " " << v[j][i] << " " << 0 << endl;
+            if(!(u[j][i]==0 && v[j][i]==0)){
+                fk << u[j][i] << " " << v[j][i] << " " << 0 << endl;
+            }
 	    }
 	}
 
@@ -153,4 +173,10 @@ int main()
             ff << p[i][j] << endl;
         }
     }
+    fc.open("y_coordinate.txt");
+	fu.open("u.txt");       
+    for(int i=1; i<yn; i++){
+        fc << i*dy << endl;
+        fu << u[i][xn/2] << endl;   
+    } 
 }
